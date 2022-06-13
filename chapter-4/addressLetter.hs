@@ -6,6 +6,7 @@ main = do
     print(addressLetterV2 ("Bob", "Smith") "reno")
     print(addressLetterV2 ("Bob", "Smith") "la")
     print(addressLetterV2 ("Stephen", "Curry") "dc")
+    print(addressLetterNY ("Edward", "Scissorhands"))
 
 addressLetter name location = nameText ++ " - " ++ location
                             where nameText = (fst name) ++ " " ++ (snd name)
@@ -38,3 +39,8 @@ getLocationFunction location = case location of
 
 addressLetterV2 name location = locationFunction name
         where locationFunction = getLocationFunction location
+
+flipBinaryArgs binaryFunction = (\x y -> binaryFunction y x)
+
+addressLetterV3 = flipBinaryArgs addressLetterV2
+addressLetterNY = addressLetterV3 "ny"
