@@ -1,25 +1,29 @@
 main = do
-    print(rotN 4 L1)
-    print(rotN 4 L2)
-    print(rotN 4 L3)
-    print(rotN 4 L4)
-    -- Fun fact, since Bool type is a member of Enum and Bounded
-    -- the rotN algorithm also works
-    -- Basically you can use rotN if the type rotated is both a member of Enum and
-    -- Bounded
-    print(rotN 2 True)
-    print(rotN 2 False)
-    print("The original message: " ++ show message)
-    print("Encrypted message:    " ++ show(fourLetterEncoder message))
-    -- since we're using ROTN to rotate/encrypt our messages
-    -- we can use the same rotate function to decrypt messages
-    print("Decrypted message:    " ++ show(fourLetterEncoder (fourLetterEncoder message)))
-    print(threeLetterMessage)
-    print(threeLetterEncoder threeLetterMessage)
-    print(threeLetterDecoder (threeLetterEncoder threeLetterMessage))
-    print(rotEncoder "REVELUV")
-    print(rotEncoder (rotEncoder "REVELUV"))
-
+  print (rotN 4 L1)
+  print (rotN 4 L2)
+  print (rotN 4 L3)
+  print (rotN 4 L4)
+  -- Fun fact, since Bool type is a member of Enum and Bounded
+  -- the rotN algorithm also works
+  -- Basically you can use rotN if the type rotated is both a member of Enum and
+  -- Bounded
+  print (rotN 2 True)
+  print (rotN 2 False)
+  print ("The original message: " ++ show message)
+  print ("Encrypted message:    " ++ show (fourLetterEncoder message))
+  -- since we're using ROTN to rotate/encrypt our messages
+  -- we can use the same rotate function to decrypt messages
+  print ("Decrypted message:    " ++ show (fourLetterEncoder (fourLetterEncoder message)))
+  print (threeLetterMessage)
+  print (threeLetterEncoder threeLetterMessage)
+  print (threeLetterDecoder (threeLetterEncoder threeLetterMessage))
+  print (rotEncoder "REVELUV")
+  print (rotEncoder (rotEncoder "REVELUV"))
+  print (intToBits 32)
+  print (bitsToInt (intToBits 32))
+  print (bitsToInt (intToBits maxBound))
+  print(bitsToChar (charToBits 'R'))
+  print(bitsToChar (charToBits 'V'))
 
 -- Reasons why Show, Enum and Bounded are derived
 -- Show - for printing in main = do
@@ -37,10 +41,10 @@ data FourLetterAlphabet = L1 | L2 | L3 | L4 deriving (Show, Enum, Bounded)
 -- Finally convert the rotation value to a letter
 rotN :: (Bounded a, Enum a) => Int -> a -> a
 rotN alphabetSize c = toEnum rotation
-    where halfAlphabet = alphabetSize `div` 2
-          offset = fromEnum c + halfAlphabet
-          rotation = offset `mod` alphabetSize
-
+  where
+    halfAlphabet = alphabetSize `div` 2
+    offset = fromEnum c + halfAlphabet
+    rotation = offset `mod` alphabetSize
 
 -- To rotate Char (Characters) we need to obtain the largest Char
 -- We can use maxBound since Char is a member of the Bounded type
@@ -58,7 +62,8 @@ largestCharNumber = fromEnum (maxBound :: Char)
 -- 2 is C, therefore we should add 0
 rotChar :: Char -> Char
 rotChar charToEncrypt = rotN sizeOfAlphabet charToEncrypt
-    where sizeOfAlphabet = 1 + fromEnum (maxBound :: Char)
+  where
+    sizeOfAlphabet = 1 + fromEnum (maxBound :: Char)
 
 -- An example of encoding a message instead of single chars
 message :: [FourLetterAlphabet]
@@ -67,8 +72,9 @@ message = [L1, L3, L4, L1, L1, L2]
 -- Using map function to rotate the chars in the message array (vals)
 fourLetterEncoder :: [FourLetterAlphabet] -> [FourLetterAlphabet]
 fourLetterEncoder vals = map rot4l vals
-    where alphaSize = 1 + fromEnum (maxBound :: FourLetterAlphabet)
-          rot4l = rotN alphaSize
+  where
+    alphaSize = 1 + fromEnum (maxBound :: FourLetterAlphabet)
+    rot4l = rotN alphaSize
 
 -- The problem with encoding/decoding alphabets with three letters
 -- A, B, C say you want to rotate A
@@ -85,8 +91,9 @@ threeLetterMessage = [Alpha, Alpha, Beta, Alpha, Kappa]
 
 threeLetterEncoder :: [ThreeLetterAlphabet] -> [ThreeLetterAlphabet]
 threeLetterEncoder vals = map rot3l vals
-    where alphaSize = 1 + fromEnum (maxBound :: ThreeLetterAlphabet)
-          rot3l = rotN alphaSize
+  where
+    alphaSize = 1 + fromEnum (maxBound :: ThreeLetterAlphabet)
+    rot3l = rotN alphaSize
 
 -- to solve the issue of odd alphabet sizes, we should add 1 to the offset
 -- if the alphabet size is odd
@@ -94,17 +101,19 @@ threeLetterEncoder vals = map rot3l vals
 -- it detects that the alphabet size is odd
 rotNdecoder :: (Bounded a, Enum a) => Int -> a -> a
 rotNdecoder n c = toEnum rotation
-    where halfN = n `div` 2
-          offset = if even n
-                   then fromEnum c + halfN
-                   else fromEnum c + halfN + 1
-          rotation = offset `mod` n
-
+  where
+    halfN = n `div` 2
+    offset =
+      if even n
+        then fromEnum c + halfN
+        else fromEnum c + halfN + 1
+    rotation = offset `mod` n
 
 threeLetterDecoder :: [ThreeLetterAlphabet] -> [ThreeLetterAlphabet]
 threeLetterDecoder vals = map rot3ldecoder vals
-                          where alphaSize = 1 + fromEnum (maxBound :: ThreeLetterAlphabet)
-                                rot3ldecoder = rotNdecoder alphaSize
+  where
+    alphaSize = 1 + fromEnum (maxBound :: ThreeLetterAlphabet)
+    rot3ldecoder = rotNdecoder alphaSize
 
 -- Here is a function that rotate Strings
 -- rotChar is already defined above
@@ -114,5 +123,100 @@ rotEncoder text = map rotChar text
 -- largestCharNumber = getting the maximum bound of Char
 rotDecoder :: String -> String
 rotDecoder text = map rotCharDecoder text
-    where alphaSize = largestCharNumber + 1
-          rotCharDecoder = rotNdecoder alphaSize
+  where
+    alphaSize = largestCharNumber + 1
+    rotCharDecoder = rotNdecoder alphaSize
+
+xorBool :: Bool -> Bool -> Bool
+xorBool value1 value2 = (value1 || value2) && (not (value1 && value2))
+
+-- This is used to easily XOR two boolean values
+xorPair :: (Bool, Bool) -> Bool
+xorPair (v1, v2) = xorBool v1 v2
+
+xor :: [Bool] -> [Bool] -> [Bool]
+-- zip takes makes a tuple for each element of two lists ^__^
+-- [A, B, C, D]
+-- [1, 2, 3, 4]
+-- [(A,1),(B,2),(C,3),(D,4)]
+xor list1 list2 = map xorPair (zip list1 list2)
+
+-- To makes things more readable, we'll create a type synonym for lists of Bool
+-- to Bits
+type Bits = [Bool]
+
+-- Converting an Int to bits are for example
+-- Let's convert the number 3
+-- 3 mod 2 = 1, 3 / 2 = 1
+-- 1 mod 2 = 1, 1 / 2 = 0
+-- The remainders are 3 in bit representation 11
+intToBits' :: Int -> Bits
+intToBits' 0 = [False]
+intToBits' 1 = [True]
+intToBits' n =
+  if remainder == 0
+    then False : intToBits' nextVal
+    else True : intToBits' nextVal
+  where
+    remainder = n `mod` 2
+    nextVal = n `div` 2
+
+-- The function above produces the correct result but in reverse
+-- intToBits' 2 = [False,True]
+-- intToBits' 8 = [False,False,False,True]
+
+-- The function below will reverse the bits produced by intToBits'
+-- and prepend False values so that all resulting Bits will have the same length
+intToBits :: Int -> Bits
+intToBits n = leadingFalses ++ reversedBits
+  where
+    reversedBits = reverse (intToBits' n)
+    missingBits = maxBits - (length reversedBits)
+    -- cycle [False] will endlessly loop the list [False]
+    -- so it'd be like [False,False ... False]
+    -- take will get n elements endless [False] list
+    leadingFalses = take missingBits (cycle [False])
+
+-- How do we decide the length of Bits?
+-- Since we convert Char to Int to convert them to Bits
+-- We take the highest possible value of Int (maxBound :: Int)
+-- and then take the length of the highest possible value
+-- The length of the maxBits = 63
+maxBits :: Int
+maxBits = length (intToBits' maxBound)
+
+-- You can now convert a Char to Bits
+charToBits :: Char -> Bits
+charToBits char = intToBits (fromEnum char)
+
+-- To convert bits back to Int
+-- Lets convert 11
+-- The formula is the sum of all bit * 2 ^ index
+-- 11 = (1 * 2 ^ 0) + (1 * 2 ^ 1)
+-- 11 = (1 * 1) + (1 * 2)
+-- 11 = (1) + (2)
+-- 11 = 1 + 2
+-- 11 = 3
+
+bitsToInt :: Bits -> Int
+bitsToInt bits = sum (map (\x -> 2 ^ (snd x)) trueLocations)
+  where
+    size = length bits
+    -- This gets the indices
+    -- If the bits input is 100 then indices is [3-1, 3-2, 3-3]
+    -- [2, 1, 0]
+    indices = [size -1, size -2 .. 0]
+    -- Since we are are only interested in bits that have true values
+    -- because 0 * 2 ^ index will always result to 0
+    -- We use filter to filter out bits that False values
+    -- Ex. 100
+    -- (1 * 2 ^ 2) + (0 * 2 ^ 1) + (0 * 2 ^ 0)
+    -- We filter out the 2 remaining 0 bits to the left
+    trueLocations =
+      filter
+        (\x -> fst x == True)
+        (zip bits indices)
+
+-- You can now then convert the Bits to a Char
+bitsToChar :: Bits -> Char
+bitsToChar bits = toEnum (bitsToInt bits)
