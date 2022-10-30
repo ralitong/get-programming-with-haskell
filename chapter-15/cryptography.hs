@@ -24,6 +24,21 @@ main = do
   print (bitsToInt (intToBits maxBound))
   print(bitsToChar (charToBits 'R'))
   print(bitsToChar (charToBits 'V'))
+  print(applyOTP myPad myPlainText)
+  print(encoderDecoder "book")
+  -- The param below is the result of `encoderDecoder "book"`
+  print(encoderDecoder "1\a\a\ETX")
+  print(encode Rot "Haskell")
+  print(decode Rot "\557128\557153\557171\557163\557157\557164\557164")
+  print(encode myOTP "Learn Haskell")
+  print(decode myOTP "Ldcqj%Nf{bog`")
+  print(encode myOTP "this is a longer sentence, I hope it encodes")
+  print(encode myOTP "tikp$lu'i)fdbjk}0bw}`pxt}5:R<uqoE\SOHKW\EOT@HDGMOX")
+  print(examplePRNG 12345)
+  print(examplePRNG 72)
+  print(examplePRNG 71)
+  print(examplePRNG 34)
+  
 
 -- Reasons why Show, Enum and Bounded are derived
 -- Show - for printing in main = do
@@ -220,3 +235,83 @@ bitsToInt bits = sum (map (\x -> 2 ^ (snd x)) trueLocations)
 -- You can now then convert the Bits to a Char
 bitsToChar :: Bits -> Char
 bitsToChar bits = toEnum (bitsToInt bits)
+
+
+-- The one time pad
+-- This works by having two Strings
+-- The input and pad
+-- You XOR each character in input to each pad's character
+-- input[n] XOR pad[n]
+-- Ideally, the pad should have the same length as the input
+myPad :: String
+myPad = "Shhhhhh"
+
+myPlainText :: String
+myPlainText = "Haskell"
+
+-- This function only returns the bits of the XOR'ed plaintext and pad
+applyOTP' :: String -> String -> [Bits]
+applyOTP' pad plaintext = map (\pair -> (fst pair) `xor` (snd pair))
+                          (zip padBits plaintextBits)
+          where padBits = map charToBits pad
+                plaintextBits = map charToBits plaintext
+
+-- This function will now return XOR'ed pad and plaintext to a String
+applyOTP :: String -> String -> String
+applyOTP pad plaintext = map bitsToChar bitList
+  where bitList = applyOTP' pad plaintext
+
+-- Using partial applications, you can create a decoder and encoder using the 
+-- same one-time pad function
+-- Note:
+-- Partial applications are functions with incomplete parameters
+-- myCompleteFunc a b -> a + b
+-- myPartialFuncThatAdds20 = myCompleteFunc 20
+
+encoderDecoder :: String -> String
+encoderDecoder = applyOTP myPad
+
+-- The Cipher class to generalize cipher operations
+class Cipher a where
+  encode :: a -> String -> String
+  decode :: a -> String -> String
+
+-- A dataType to define a Cipher instance for ROT13 algorithm
+data Rot = Rot
+
+-- The dataType Rot serves as a reference on what algorithm the Cipher class
+-- will use e.g.
+-- encode Rot "Haskell"
+instance Cipher Rot where
+  encode Rot text = rotEncoder text
+  decode Rot text = rotDecoder text
+
+-- Unlike ROT13 which only takes one input, one-time pad takes an input String
+-- and a pad
+-- It is possible to add a parameter for the one-time pad data type
+data OneTimePad = OTP String
+
+-- Notice in the encode & decode part the `pad` part is also passed
+-- (OTP pad)
+instance Cipher OneTimePad where
+    encode (OTP pad) text = applyOTP pad text
+    decode (OTP pad) text = applyOTP pad text
+
+-- Unlike Rot datatype which has no parameter
+-- You need to an instance of the OneTimePad datatype
+-- A cycle of infinite characters should be enough so that the
+-- length of the pad is greater than the message to encode
+myOTP :: OneTimePad
+myOTP = OTP (cycle [minBound .. maxBound])
+
+-- A pseudo-random number generator PRNG that creates a stream of
+-- random numbers to be used to XOR the bits for one-time pad
+-- a & b is used to determine the randomness
+-- maxNumber is the bound of many numbers to generate
+-- seed - a random number also to effect randomness
+prng :: Int -> Int -> Int -> Int -> Int
+prng a b maxNumber seed = (a * seed + b) `mod` maxNumber
+
+examplePRNG :: Int -> Int
+-- This is a partial function since the seed value is not included in the parameter
+examplePRNG = prng 1337 7 100
