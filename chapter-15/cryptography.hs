@@ -38,6 +38,9 @@ main = do
   print(examplePRNG 72)
   print(examplePRNG 71)
   print(examplePRNG 34)
+  -- print(cycle [(intToChar (scpPRNG 1)) .. (intToChar (scpPRNG maxBound))])
+  print(encode myStreamCipher "this is a longer sentence, I hope it encodes")
+  print(decode myStreamCipher "\1332\1321\1323\1328\1380\1324\1333\1383\1321\1385\1318\1316\1314\1322\1323\1341\1392\1314\1335\1341\1312\1328\1336\1332\1341\1397\1402\1298\1404\1333\1329\1327\1285\1345\1291\1303\1348\1280\1288\1284\1287\1293\1295\1304")
   
 
 -- Reasons why Show, Enum and Bounded are derived
@@ -315,3 +318,15 @@ prng a b maxNumber seed = (a * seed + b) `mod` maxNumber
 examplePRNG :: Int -> Int
 -- This is a partial function since the seed value is not included in the parameter
 examplePRNG = prng 1337 7 100
+scpPRNG = prng 1337 7 (fromEnum (maxBound :: Char))
+
+intToChar :: Int -> Char
+intToChar a = toEnum a
+
+data StreamCipher = SCP String
+myStreamCipher :: StreamCipher
+myStreamCipher = SCP (cycle [(intToChar (scpPRNG 1)) .. (intToChar (scpPRNG maxBound))])
+
+instance Cipher StreamCipher where
+  encode (SCP pad) text = applyOTP pad text
+  decode (SCP pad) text = applyOTP pad text
